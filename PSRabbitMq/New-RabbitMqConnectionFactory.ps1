@@ -9,9 +9,12 @@
     Builds a RabbitMQ.Client.ConnectionFactory based on parameters, invokes CreateConnection method.
 
 .PARAMETER ComputerName
-    RabbitMq host
+    Optional RabbitMq host
 
     If SSL is specified, we use this as the SslOption server name as well.
+
+.PARAMETER Uri
+    Optional URI for connection to RabbitMq host
 
 .PARAMETER Credential
     Optional PSCredential to connect to RabbitMq with
@@ -35,6 +38,7 @@
     [cmdletbinding()]
     param(
         [string]$ComputerName,
+        [string]$Uri,
         [PSCredential]$Credential,
         [System.Security.Authentication.SslProtocols]$Ssl
     )
@@ -43,8 +47,18 @@
         $Factory = New-Object RabbitMQ.Client.ConnectionFactory
         
         #Add the hostname
-        $HostNameProp = [RabbitMQ.Client.ConnectionFactory].GetField("HostName")
-        $HostNameProp.SetValue($Factory, $ComputerName)
+        if($ComputerName)
+        {
+            $HostNameProp = [RabbitMQ.Client.ConnectionFactory].GetField("HostName")
+            $HostNameProp.SetValue($Factory, $ComputerName)
+        }
+
+        # Add uri
+        if($Uri)
+        {
+            $UriProp = [RabbitMQ.Client.ConnectionFactory].GetProperty("Uri")
+            $UriProp.SetValue($Factory, $Uri)
+        }
     
         #Add cred and SSL info
         if($Credential)
